@@ -1,5 +1,5 @@
 var hourArray = [{
-    miltime: "9",
+    miltime: "09",
     id: "0",
     save: "",
 },{
@@ -44,57 +44,95 @@ var main = $(".container");
 // dynamically generated new elements
 var newDiv = $("<div>");
 var newTable = $("<table>");
+
+// predefined variables
 var hourSlot = "";
+var timeIndex = 0;
+var currentTime = moment();
 
 // Date & Time below the Jumbotron
 function displayHeader () {
-    var dayHeader = moment().format("dddd, MMMM Do YYYY");
+    var dayHeader = currentTime.format("dddd, MMMM Do YYYY");
     displayDate.text(dayHeader);
 }
 
+// shows current day in header
 displayHeader();
 
-// pulls persisted data, compares it to current Data, if different, sets current data to saved data, updates into local storage
+// pulls persisted data, compares it to current Data. If saveData exists, it will populate in the application
 function persistedData () {
-    var saveData = JSON.parse(localStorage.getItem("userSaved")) || [];
-    if (hourArray !== saveData){
-        saveData = hourArray;
-        localStorage.setItem("userSaved", JSON.stringify(saveData));
+    var saveData = JSON.parse(localStorage.getItem("userSaved"));
+    if (saveData){
+        hourArray = saveData;
     }
 }
 
+// loads any data from localstorage
 persistedData();
+
+function newData(){
+    localStorage.setItem("userSaved", JSON.stringify(hourArray));
+}
 
 function plannerHour(time){
     var hourBlock = moment({hour: time}).format("h:mm a");
     hourSlot = hourBlock;
-    // console.log(hourBlock);
 }
 
 for (var i = 0; i < hourArray.length; i++){
     plannerHour(hourArray[i].miltime);
     buildTimeBlocks();
+    timeIndex++;
 }
 
 // build time block rows with date column, textarea column and save button 
 function buildTimeBlocks(){
-    // parent object is Body>>Div Class "Container"
+    
+    // creates Row Element, includes font styling
     var rowDiv = $("<div>");
-    rowDiv.attr("class", "row");
-    main.attr("style", "font-family: Open Sans")
+    rowDiv.addClass("row");
+    $("body").attr("style", "font-family: Open Sans")
 
+    // creates Row's hour of day 
     var hourDiv = $("<div>");
     hourDiv.text(hourSlot);
-    hourDiv.attr("class", "time-block hour col-2");
+    hourDiv.addClass("time-block hour col-md-2")
 
-    var userTextEl = $("<textarea>");
-    userTextEl.attr("class", "col-8");
+    // creates area for user to input
+    var userTextEl = $("<textarea>").attr("id", hourArray[timeIndex].id);
+    userTextEl.addClass("description col-md-9");
+    userTextEl.text(hourArray[timeIndex].save);
     
+    // creates button to save row's information
+    var buttonSlot = $("<i></i>")
+    buttonSlot.addClass("far fa-save fa-lg")
+    var saveIcon = $("<button></button>")
+    saveIcon.addClass("col-md-1 saveBtn")
+
+    // based on time of day vs row's hour, changes color format
+    if (hourArray[timeIndex].miltime < currentTime.format("HH")){
+
+        userTextEl.addClass("past");
+
+    } else if (hourArray[timeIndex].miltime > currentTime.format("HH")){
+        userTextEl.addClass("future");
+    } else {
+        userTextEl.addClass("present col-md-8");
+    }
+
     main.append(rowDiv);
-    rowDiv.append(hourDiv);
-    rowDiv.append(userTextEl);
-
+    rowDiv.append(hourDiv, userTextEl, saveIcon);
+    saveIcon.append(buttonSlot);
+    
 }
+// based on global click, identifies element and saves any user input into original array property for persistence
+$(".saveBtn").on("click", function(event){
+    event.preventDefault();
+    var futureSaveText = $(this).siblings(".future");
+    var tempIndex = futureSaveText.attr("id");
+    hourArray[tempIndex].save = futureSaveText.val();
 
+    newData();
+})
 
 
