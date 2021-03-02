@@ -9,8 +9,7 @@ Creation & Usage of this application was to demonstrate the ability to utilize t
 Github: https://github.com/doublem1nt/scheduleAhead
 Live Application: https://doublem1nt.github.io/scheduleAhead/
 
-## Screenshots
-
+## Demo
 ![demo](./assets/demo.gif)
 
 ## Credits 
